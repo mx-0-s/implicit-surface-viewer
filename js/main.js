@@ -29,7 +29,7 @@ camera.position.set(3, 2.5, 3);
 camera.lookAt(0, 0, 0);
 
 const renderer = new THREE.WebGLRenderer({ canvas, antialias: true });
-renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
 
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
@@ -62,6 +62,7 @@ let currentMode = 'solid';
 let currentFunction = 'sphere';
 let currentParams = {};
 let customFn = null;
+let generationFrame = null;
 
 // 材质
 const material = new THREE.MeshPhongMaterial({
@@ -88,22 +89,23 @@ function generateSurface() {
         fn = (x, y, z) => preset.fn(x, y, z, currentParams);
     }
 
-    // 创建 MarchingCubes
+    // 创建 MarchingCubes，按分辨率预留足够的三角形缓冲区
     // MarchingCubes 的 field 数组大小为 resolution^3
-    const mc = new MarchingCubes(resolution, material, false, false);
+    const maxPolyCount = Math.max(10000, resolution * resolution * 12);
+    const mc = new MarchingCubes(resolution, material, false, false, maxPolyCount);
     mc.isolation = 0;
     // MarchingCubes 顶点坐标已经是 [-1, 1]，映射到采样空间 [-size/2, size/2]
     mc.scale.set(size / 2, size / 2, size / 2);
 
     // 填充场值
-        const n = resolution;
+    const n = resolution;
     const half = size / 2;
     for (let i = 0; i < n; i++) {
         for (let j = 0; j < n; j++) {
             for (let k = 0; k < n; k++) {
-                    const x = (i / (resolution - 1)) * size - half;
-                    const y = (j / (resolution - 1)) * size - half;
-                    const z = (k / (resolution - 1)) * size - half;
+                const x = (i / (resolution - 1)) * size - half;
+                const y = (j / (resolution - 1)) * size - half;
+                const z = (k / (resolution - 1)) * size - half;
                 mc.field[i + j * n + k * n * n] = fn(x, y, z);
             }
         }
@@ -120,6 +122,14 @@ function generateSurface() {
     scene.add(surfaceMesh);
 
     applyDisplayMode();
+}
+
+function scheduleSurfaceGeneration() {
+    if (generationFrame !== null) return;
+    generationFrame = requestAnimationFrame(() => {
+        generationFrame = null;
+        generateSurface();
+    });
 }
 
 // ===== 显示模式 =====
@@ -183,7 +193,7 @@ function buildParamSliders() {
             const val = parseFloat(slider.value);
             currentParams[param.key] = val;
             valueLabel.textContent = val.toFixed(2);
-            generateSurface();
+            scheduleSurfaceGeneration();
         });
 
         row.appendChild(label);
@@ -269,7 +279,7 @@ function initKeypad() {
             currentFunction = 'custom';
             document.getElementById('functionSelect').value = 'custom';
             buildParamSliders();
-            generateSurface();
+            scheduleSurfaceGeneration();
         } catch (err) {
             alert(err.message);
         }
@@ -305,7 +315,7 @@ function initEvents() {
             }
         }
         buildParamSliders();
-        generateSurface();
+        scheduleSurfaceGeneration();
     });
 
     // 分辨率

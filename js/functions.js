@@ -43,7 +43,7 @@ export const PRESET_FUNCTIONS = {
             { key: 'b', label: 'b', min: 0.3, max: 1.5, step: 0.05, value: 0.8 },
             { key: 'c', label: 'c', min: 0.3, max: 1.5, step: 0.05, value: 0.8 }
         ],
-        fn: (x, y, z, p) => x*x/(p.a*p.a) + y*y/(p.b*p.b) - z*z/(p.c*p.c) - 1
+        fn: (x, y, z, p) => z*z/(p.c*p.c) - x*x/(p.a*p.a) - y*y/(p.b*p.b) - 1
     },
     klein: {
         name: '克莱因瓶',
