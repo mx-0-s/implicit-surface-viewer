@@ -74,16 +74,23 @@ const material = new THREE.MeshPhongMaterial({
     opacity: 1.0
 });
 
+const CUSTOM_PARAMS = [
+    { key: 'a', label: 'a', min: -5, max: 5, step: 0.1, value: 1 },
+    { key: 'b', label: 'b', min: -5, max: 5, step: 0.1, value: 1 },
+    { key: 'c', label: 'c', min: -5, max: 5, step: 0.1, value: 1 }
+];
+
 // ===== Marching Cubes 生成曲面 =====
 function generateSurface() {
     const resolution = parseInt(document.getElementById('resolution').value);
-    const size = 4.0; // 采样空间 [-2, 2]
+    const range = parseFloat(document.getElementById('domainRange').value);
+    const size = range * 2; // 采样空间 [-range, range]
 
     // 获取当前函数
     let fn;
     if (currentFunction === 'custom') {
         if (!customFn) return;
-        fn = customFn;
+        fn = (x, y, z) => customFn(x, y, z, currentParams.a, currentParams.b, currentParams.c);
     } else {
         const preset = PRESET_FUNCTIONS[currentFunction];
         fn = (x, y, z) => preset.fn(x, y, z, currentParams);
@@ -161,15 +168,12 @@ function buildParamSliders() {
     const container = document.getElementById('paramSliders');
     container.innerHTML = '';
 
-    if (currentFunction === 'custom') {
-        container.innerHTML = '<div class="value-label" style="text-align:left;">自定义函数无参数</div>';
-        return;
-    }
-
-    const preset = PRESET_FUNCTIONS[currentFunction];
+    const params = currentFunction === 'custom'
+        ? CUSTOM_PARAMS
+        : PRESET_FUNCTIONS[currentFunction].params;
     currentParams = {};
 
-    preset.params.forEach(param => {
+    params.forEach(param => {
         currentParams[param.key] = param.value;
 
         const row = document.createElement('div');
@@ -323,8 +327,10 @@ function initEvents() {
     const resolutionValue = document.getElementById('resolutionValue');
     resolutionSlider.addEventListener('input', () => {
         resolutionValue.textContent = resolutionSlider.value;
-        generateSurface();
+        scheduleSurfaceGeneration();
     });
+
+    document.getElementById('domainRange').addEventListener('change', scheduleSurfaceGeneration);
 
     // 显示模式
     document.querySelectorAll('.btn-group .calc-btn').forEach(btn => {

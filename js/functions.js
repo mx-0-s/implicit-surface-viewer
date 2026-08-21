@@ -53,11 +53,9 @@ export const PRESET_FUNCTIONS = {
         fn: (x, y, z, p) => {
             const s = p.s;
             x /= s; y /= s; z /= s;
-            // 克莱因瓶近似隐函数
-            const r = 2.0;
-            const a = x*x + y*y + z*z + r*r - 1;
-            const b = x*x + y*y - 1;
-            return a*a*a*a - 4*r*r*b*b - 4*z*z*(x*x+y*y);
+            // 克莱因瓶的标准隐式表达式
+            const a = x*x + y*y + z*z + 2*y - 1;
+            return a*a - 8*z*z;
         }
     }
 };
@@ -79,9 +77,9 @@ export function parseCustomFunction(expr) {
 
     // 编译为函数
     try {
-        const fn = new Function('x', 'y', 'z', `"use strict"; return (${code});`);
+        const fn = new Function('x', 'y', 'z', 'a', 'b', 'c', `"use strict"; return (${code});`);
         // 测试执行
-        fn(0, 0, 0);
+        fn(0, 0, 0, 0, 0, 0);
         return fn;
     } catch (e) {
         throw new Error('函数表达式无效: ' + e.message);
