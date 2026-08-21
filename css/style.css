@@ -1,0 +1,375 @@
+/* ===== 主题变量 ===== */
+:root {
+    --bg: #ffffff;
+    --panel-bg: #f3f3f3;
+    --panel-border: #d9d9d9;
+    --text: #000000;
+    --text-secondary: #666666;
+    --btn-bg: #ffffff;
+    --btn-border: #d9d9d9;
+    --btn-hover: #e5f1fb;
+    --btn-active: #cce4f7;
+    --accent: #0067c0;
+    --accent-hover: #005a9e;
+    --input-bg: #ffffff;
+    --input-border: #d9d9d9;
+    --slider-track: #d9d9d9;
+    --slider-thumb: #0067c0;
+    --titlebar-bg: #f3f3f3;
+    --shadow: rgba(0, 0, 0, 0.15);
+    --viewport-bg: #f8f9fa;
+}
+
+[data-theme="dark"] {
+    --bg: #202020;
+    --panel-bg: #2b2b2b;
+    --panel-border: #3b3b3b;
+    --text: #ffffff;
+    --text-secondary: #9d9d9d;
+    --btn-bg: #3b3b3b;
+    --btn-border: #555555;
+    --btn-hover: #4a4a4a;
+    --btn-active: #5a5a5a;
+    --accent: #4cc2ff;
+    --accent-hover: #6fd0ff;
+    --input-bg: #3b3b3b;
+    --input-border: #555555;
+    --slider-track: #555555;
+    --slider-thumb: #4cc2ff;
+    --titlebar-bg: #2b2b2b;
+    --shadow: rgba(0, 0, 0, 0.5);
+    --viewport-bg: #1a1a1a;
+}
+
+/* ===== 基础重置 ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+    font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    transition: background 0.3s, color 0.3s;
+    overflow: hidden;
+}
+
+/* ===== 应用布局 ===== */
+.app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+}
+
+/* ===== 标题栏 ===== */
+.titlebar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 16px;
+    background: var(--titlebar-bg);
+    border-bottom: 1px solid var(--panel-border);
+    user-select: none;
+}
+
+.title {
+    font-size: 16px;
+    font-weight: 600;
+}
+
+.theme-btn {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--btn-border);
+    border-radius: 6px;
+    background: var(--btn-bg);
+    color: var(--text);
+    font-size: 18px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.theme-btn:hover {
+    background: var(--btn-hover);
+}
+
+/* ===== 主区域 ===== */
+.main {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* ===== 左侧面板 ===== */
+.panel {
+    width: 280px;
+    background: var(--panel-bg);
+    border-right: 1px solid var(--panel-border);
+    padding: 16px;
+    overflow-y: auto;
+    flex-shrink: 0;
+}
+
+.panel-section {
+    margin-bottom: 20px;
+}
+
+.panel-section h3 {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ===== 计算器风格控件 ===== */
+.calc-select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--input-border);
+    border-radius: 6px;
+    background: var(--input-bg);
+    color: var(--text);
+    font-size: 14px;
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.calc-select:focus {
+    border-color: var(--accent);
+}
+
+.calc-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--input-border);
+    border-radius: 6px;
+    background: var(--input-bg);
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+    margin-bottom: 8px;
+    transition: border-color 0.2s;
+}
+
+.calc-input:focus {
+    border-color: var(--accent);
+}
+
+.calc-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--btn-border);
+    border-radius: 6px;
+    background: var(--btn-bg);
+    color: var(--text);
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.calc-btn:hover {
+    background: var(--btn-hover);
+}
+
+.calc-btn.active {
+    background: var(--btn-active);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.calc-btn.primary {
+    background: var(--accent);
+    color: #ffffff;
+    border-color: var(--accent);
+    width: 100%;
+}
+
+.calc-btn.primary:hover {
+    background: var(--accent-hover);
+}
+
+/* ===== 按钮组 ===== */
+.btn-group {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-group .calc-btn {
+    flex: 1;
+}
+
+/* ===== 滑块 ===== */
+.slider-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.slider-row input[type="range"] {
+    flex: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--slider-track);
+    outline: none;
+    cursor: pointer;
+}
+
+.slider-row input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--slider-thumb);
+    cursor: pointer;
+    border: none;
+}
+
+.slider-row input[type="range"]::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: var(--slider-thumb);
+    cursor: pointer;
+    border: none;
+}
+
+.value-label {
+    min-width: 36px;
+    text-align: right;
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+}
+
+/* 参数滑块容器 */
+#paramSliders .slider-row {
+    margin-bottom: 10px;
+}
+
+#paramSliders .slider-row label {
+    min-width: 24px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+/* ===== 右侧视口 ===== */
+.viewport {
+    flex: 1;
+    position: relative;
+    background: var(--viewport-bg);
+    overflow: hidden;
+}
+
+#glCanvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+
+.hint {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: var(--text-secondary);
+    background: var(--panel-bg);
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--panel-border);
+    opacity: 0.8;
+    pointer-events: none;
+    user-select: none;
+}
+
+/* ===== 科学计算器键盘 ===== */
+.calc-keypad {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.keypad-row {
+    display: flex;
+    gap: 6px;
+}
+
+.key-btn {
+    flex: 1;
+    padding: 8px 0;
+    border: 1px solid var(--btn-border);
+    border-radius: 6px;
+    background: var(--btn-bg);
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    user-select: none;
+}
+
+.key-btn:hover {
+    background: var(--btn-hover);
+}
+
+.key-btn:active {
+    background: var(--btn-active);
+}
+
+.key-btn.var {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.key-btn.op {
+    color: var(--accent);
+    font-weight: 600;
+}
+
+.key-btn.fn {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.key-btn.clear {
+    color: #d13438;
+    font-weight: 700;
+}
+
+.key-btn.backspace {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+.apply-btn {
+    flex: 2;
+    padding: 8px 0;
+}
+
+/* ===== 滚动条 ===== */
+.panel::-webkit-scrollbar {
+    width: 8px;
+}
+
+.panel::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.panel::-webkit-scrollbar-thumb {
+    background: var(--slider-track);
+    border-radius: 4px;
+}
+
+.panel::-webkit-scrollbar-thumb:hover {
+    background: var(--text-secondary);
+}

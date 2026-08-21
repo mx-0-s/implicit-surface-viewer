@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三维隐函数曲面绘制器</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-theme="light">
+    <div class="app">
+        <!-- 顶部标题栏 -->
+        <header class="titlebar">
+            <div class="title">三维隐函数曲面绘制器</div>
+            <div class="titlebar-actions">
+                <button id="themeToggle" class="theme-btn" title="切换主题">🌙</button>
+            </div>
+        </header>
+
+        <div class="main">
+            <!-- 左侧控制面板 -->
+            <aside class="panel">
+                <section class="panel-section">
+                    <h3>预设曲面</h3>
+                    <select id="functionSelect" class="calc-select">
+                        <option value="sphere">球面</option>
+                        <option value="torus">环面</option>
+                        <option value="heart">心脏曲面</option>
+                        <option value="hyperboloid">双叶双曲面</option>
+                        <option value="klein">克莱因瓶</option>
+                        <option value="custom">自定义函数</option>
+                    </select>
+                </section>
+
+                <section class="panel-section" id="paramSection">
+                    <h3>参数调节</h3>
+                    <div id="paramSliders"></div>
+                </section>
+
+                <section class="panel-section">
+                    <h3>分辨率</h3>
+                    <div class="slider-row">
+                        <input type="range" id="resolution" min="20" max="80" value="50">
+                        <span id="resolutionValue" class="value-label">50</span>
+                    </div>
+                </section>
+
+                <section class="panel-section">
+                    <h3>显示模式</h3>
+                    <div class="btn-group">
+                        <button class="calc-btn active" data-mode="solid">实体</button>
+                        <button class="calc-btn" data-mode="wireframe">线框</button>
+                        <button class="calc-btn" data-mode="transparent">半透明</button>
+                    </div>
+                </section>
+
+                <section class="panel-section" id="customSection">
+                    <h3>自定义函数 f(x,y,z)=0</h3>
+                    <input type="text" id="customFunction" class="calc-input" placeholder="例如: x*x+y*y+z*z-1">
+                    <div class="calc-keypad">
+                        <div class="keypad-row">
+                            <button class="key-btn var" data-key="x">x</button>
+                            <button class="key-btn var" data-key="y">y</button>
+                            <button class="key-btn var" data-key="z">z</button>
+                            <button class="key-btn fn" data-key="pi">π</button>
+                            <button class="key-btn fn" data-key="e">e</button>
+                        </div>
+                        <div class="keypad-row">
+                            <button class="key-btn" data-key="7">7</button>
+                            <button class="key-btn" data-key="8">8</button>
+                            <button class="key-btn" data-key="9">9</button>
+                            <button class="key-btn op" data-key="/">÷</button>
+                            <button class="key-btn op" data-key="(">(</button>
+                        </div>
+                        <div class="keypad-row">
+                            <button class="key-btn" data-key="4">4</button>
+                            <button class="key-btn" data-key="5">5</button>
+                            <button class="key-btn" data-key="6">6</button>
+                            <button class="key-btn op" data-key="*">×</button>
+                            <button class="key-btn op" data-key=")">)</button>
+                        </div>
+                        <div class="keypad-row">
+                            <button class="key-btn" data-key="1">1</button>
+                            <button class="key-btn" data-key="2">2</button>
+                            <button class="key-btn" data-key="3">3</button>
+                            <button class="key-btn op" data-key="-">−</button>
+                            <button class="key-btn op" data-key="^">^</button>
+                        </div>
+                        <div class="keypad-row">
+                            <button class="key-btn" data-key="0">0</button>
+                            <button class="key-btn" data-key=".">.</button>
+                            <button class="key-btn op" data-key="+">+</button>
+                            <button class="key-btn fn" data-key="sqrt">√</button>
+                            <button class="key-btn fn" data-key="abs">|x|</button>
+                        </div>
+                        <div class="keypad-row">
+                            <button class="key-btn fn" data-key="sin">sin</button>
+                            <button class="key-btn fn" data-key="cos">cos</button>
+                            <button class="key-btn fn" data-key="tan">tan</button>
+                            <button class="key-btn fn" data-key="log">log</button>
+                            <button class="key-btn fn" data-key="exp">exp</button>
+                        </div>
+                        <div class="keypad-row">
+                            <button class="key-btn clear" data-key="clear">C</button>
+                            <button class="key-btn backspace" data-key="backspace">⌫</button>
+                            <button id="applyCustom" class="calc-btn primary apply-btn">应用</button>
+                        </div>
+                    </div>
+                </section>
+            </aside>
+
+            <!-- 右侧三维渲染区域 -->
+            <main class="viewport">
+                <canvas id="glCanvas"></canvas>
+                <div class="hint">拖拽旋转 · 滚轮缩放</div>
+                <div id="errorOverlay" style="display:none; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); background:rgba(0,0,0,0.85); color:#ff6b6b; padding:20px 30px; border-radius:8px; font-size:14px; line-height:1.8; z-index:100; white-space:pre-line; text-align:center; max-width:80%;"></div>
+            </main>
+        </div>
+    </div>
+
+    <!-- 引入 Three.js CDN -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+</html>
