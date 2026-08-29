@@ -121,6 +121,17 @@ implicit-surface-viewer/
 
 ## 许可证 License
 
-当前项目未指定许可证。
+本项目已采用 MIT 许可证。
 
-No license has been specified for this project yet.
+This project is licensed under the MIT License.
+
+本项目使用 Three.js（MIT License）通过 `unpkg` CDN 引入，相关版权和许可信息请参考 Three.js 官方仓库：
+
+This project uses Three.js (MIT License) via the `unpkg` CDN. Please refer to the official Three.js repository for copyright and license details:
+
+- https://github.com/mrdoob/three.js
+- https://github.com/mrdoob/three.js/blob/dev/LICENSE
+
+如果你将此项目重新分发或用于公开发布，请保留上述第三方依赖的版权与许可证说明。
+
+If you redistribute or publish this project, please retain the copyright and license notices for the third-party dependency above.

@@ -327,7 +327,10 @@ function initEvents() {
     const resolutionValue = document.getElementById('resolutionValue');
     resolutionSlider.addEventListener('input', () => {
         resolutionValue.textContent = resolutionSlider.value;
-        scheduleSurfaceGeneration();
+    });
+    resolutionSlider.addEventListener('change', () => {
+        resolutionValue.textContent = resolutionSlider.value;
+        generateSurface();
     });
 
     document.getElementById('domainRange').addEventListener('change', scheduleSurfaceGeneration);
