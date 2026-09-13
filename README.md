@@ -78,8 +78,8 @@ Choose a coordinate mode in the interface. All modes still use a Cartesian grid 
 ### 坐标变量 Coordinate Variables
 
 - 笛卡尔坐标 Cartesian: `x`, `y`, `z`
-- 柱坐标 Cylindrical: `rho = sqrt(x*x + y*y)`, `theta = atan2(y, x)`, `z`
-- 球坐标 Spherical: `rho = sqrt(x*x + y*y + z*z)`, `theta = atan2(y, x)`, `phi = acos(z / rho)`
+- 柱坐标 Cylindrical: `ρ = sqrt(x*x + y*y)`, `θ = atan2(y, x)`, `z`
+- 球坐标 Spherical: `ρ = sqrt(x*x + y*y + z*z)`, `θ = atan2(y, x)`, `φ = acos(z / ρ)`
 
 其中 `theta` 和 `phi` 使用弧度。原点处 `phi` 按 `0` 处理。
 

@@ -66,6 +66,9 @@ export function parseCustomFunction(expr) {
     // 替换数学符号
     let code = expr
         .replace(/\^/g, '**')
+        .replace(/ρ/g, 'rho')
+        .replace(/θ/g, 'theta')
+        .replace(/φ/g, 'phi')
         .replace(/π/g, 'Math.PI')
         .replace(/\be\b(?![\w.])/g, 'Math.E')
         .replace(/sin\(/g, 'Math.sin(')

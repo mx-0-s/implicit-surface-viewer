@@ -245,6 +245,8 @@ function initKeypad() {
     const input = document.getElementById('customFunction');
     const keypad = document.querySelector('.calc-keypad');
 
+    updateCoordinateKeys();
+
     keypad.addEventListener('click', (e) => {
         const btn = e.target.closest('.key-btn');
         if (!btn) return;
@@ -359,6 +361,7 @@ function initEvents() {
     const coordinateHint = document.getElementById('coordinateHint');
     coordinateModeSelect.addEventListener('change', () => {
         coordinateMode = coordinateModeSelect.value;
+        updateCoordinateKeys();
         coordinateHint.textContent = getCoordinateHint();
         if (currentFunction === 'custom') scheduleSurfaceGeneration();
     });
@@ -374,12 +377,26 @@ function initEvents() {
     });
 }
 
+function updateCoordinateKeys() {
+    const coordinateKeys = document.querySelectorAll('.coordinate-key');
+    const labels = coordinateMode === 'cylindrical'
+        ? ['ρ', 'θ', 'z']
+        : coordinateMode === 'spherical'
+            ? ['ρ', 'θ', 'φ']
+            : ['x', 'y', 'z'];
+
+    coordinateKeys.forEach((button, index) => {
+        button.dataset.key = labels[index];
+        button.textContent = labels[index];
+    });
+}
+
 function getCoordinateHint() {
     switch (coordinateMode) {
         case 'cylindrical':
-            return '可用变量：x, y, z, rho(√(x²+y²)), theta(方位角)';
+            return '可用变量：ρ(√(x²+y²)), θ(方位角), z';
         case 'spherical':
-            return '可用变量：x, y, z, rho(距离), theta(方位角), phi(极角)';
+            return '可用变量：ρ(距离), θ(方位角), φ(极角)';
         default:
             return '可用变量：x, y, z';
     }
