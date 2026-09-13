@@ -144,6 +144,13 @@ html, body {
     border-color: var(--accent);
 }
 
+.input-hint {
+    margin: 6px 0 8px;
+    color: var(--text-secondary);
+    font-size: 11px;
+    line-height: 1.5;
+}
+
 .calc-input {
     width: 100%;
     padding: 8px 12px;

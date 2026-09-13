@@ -8,8 +8,8 @@ A browser-based 3D implicit surface visualizer powered by Three.js and the March
 
 - 预设曲面：球面、环面、心脏曲面、双叶双曲面和克莱因瓶
 - Presets: sphere, torus, heart, two-sheet hyperboloid, and Klein bottle
-- 自定义隐函数 `f(x, y, z, a, b, c) = 0`
-- Custom implicit functions: `f(x, y, z, a, b, c) = 0`
+- 自定义隐函数，支持笛卡尔坐标、柱坐标和球坐标
+- Custom implicit functions with Cartesian, cylindrical, and spherical coordinates
 - 计算器键盘支持 `x, y, z, a, b, c`、常数、基本运算和常用函数
 - Keypad support for `x, y, z, a, b, c`, constants, operators, and common functions
 - `a, b, c` 参数范围：`-5` 到 `5`
@@ -71,6 +71,20 @@ Do not open `index.html` directly with a double-click, because browsers may rest
 
 ## 自定义函数 Custom Functions
 
+可以在界面中选择坐标模式。所有模式仍然使用笛卡尔网格进行 Marching Cubes 采样。
+
+Choose a coordinate mode in the interface. All modes still use a Cartesian grid for Marching Cubes sampling.
+
+### 坐标变量 Coordinate Variables
+
+- 笛卡尔坐标 Cartesian: `x`, `y`, `z`
+- 柱坐标 Cylindrical: `rho = sqrt(x*x + y*y)`, `theta = atan2(y, x)`, `z`
+- 球坐标 Spherical: `rho = sqrt(x*x + y*y + z*z)`, `theta = atan2(y, x)`, `phi = acos(z / rho)`
+
+其中 `theta` 和 `phi` 使用弧度。原点处 `phi` 按 `0` 处理。
+
+The angular variables `theta` and `phi` use radians. At the origin, `phi` is treated as `0`.
+
 在输入框中输入满足以下形式的表达式：
 
 Enter an expression in the following form:
@@ -93,6 +107,7 @@ Supported functions include:
 
 ```text
 sin(x)  cos(x)  tan(x)  sqrt(x)  abs(x)  log(x)  exp(x)
+acos(x)  asin(x)  atan2(y, x)
 ```
 
 幂运算可以使用 `^`，例如 `x^2`。

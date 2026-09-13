@@ -1,6 +1,7 @@
 /**
  * 预设隐函数定义及参数配置
  * 每个函数返回 f(x,y,z) 的值，等值面为 f(x,y,z)=0
+ * 自定义函数还可以使用 rho、theta、phi 表示极坐标变量
  */
 
 // 预设函数配置
@@ -73,13 +74,19 @@ export function parseCustomFunction(expr) {
         .replace(/sqrt\(/g, 'Math.sqrt(')
         .replace(/abs\(/g, 'Math.abs(')
         .replace(/log\(/g, 'Math.log(')
-        .replace(/exp\(/g, 'Math.exp(');
+        .replace(/exp\(/g, 'Math.exp(')
+        .replace(/acos\(/g, 'Math.acos(')
+        .replace(/asin\(/g, 'Math.asin(')
+        .replace(/atan2\(/g, 'Math.atan2(');
 
     // 编译为函数
     try {
-        const fn = new Function('x', 'y', 'z', 'a', 'b', 'c', `"use strict"; return (${code});`);
+        const fn = new Function(
+            'x', 'y', 'z', 'a', 'b', 'c', 'rho', 'theta', 'phi',
+            `"use strict"; return (${code});`
+        );
         // 测试执行
-        fn(0, 0, 0, 0, 0, 0);
+        fn(0, 0, 0, 0, 0, 0, 0, 0, 0);
         return fn;
     } catch (e) {
         throw new Error('函数表达式无效: ' + e.message);

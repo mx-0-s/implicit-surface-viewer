@@ -62,6 +62,7 @@ let currentMode = 'solid';
 let currentFunction = 'sphere';
 let currentParams = {};
 let customFn = null;
+let coordinateMode = 'cartesian';
 let generationFrame = null;
 
 // 材质
@@ -90,7 +91,25 @@ function generateSurface() {
     let fn;
     if (currentFunction === 'custom') {
         if (!customFn) return;
-        fn = (x, y, z) => customFn(x, y, z, currentParams.a, currentParams.b, currentParams.c);
+        fn = (x, y, z) => {
+            const rho = Math.sqrt(x * x + y * y + z * z);
+            const theta = Math.atan2(y, x);
+            const phi = rho === 0 ? 0 : Math.acos(Math.max(-1, Math.min(1, z / rho)));
+            const radialDistance = coordinateMode === 'spherical'
+                ? rho
+                : Math.sqrt(x * x + y * y);
+            return customFn(
+                x,
+                y,
+                z,
+                currentParams.a,
+                currentParams.b,
+                currentParams.c,
+                radialDistance,
+                theta,
+                coordinateMode === 'spherical' ? phi : 0
+            );
+        };
     } else {
         const preset = PRESET_FUNCTIONS[currentFunction];
         fn = (x, y, z) => preset.fn(x, y, z, currentParams);
@@ -335,6 +354,15 @@ function initEvents() {
 
     document.getElementById('domainRange').addEventListener('change', scheduleSurfaceGeneration);
 
+    // 自定义函数坐标模式
+    const coordinateModeSelect = document.getElementById('coordinateMode');
+    const coordinateHint = document.getElementById('coordinateHint');
+    coordinateModeSelect.addEventListener('change', () => {
+        coordinateMode = coordinateModeSelect.value;
+        coordinateHint.textContent = getCoordinateHint();
+        if (currentFunction === 'custom') scheduleSurfaceGeneration();
+    });
+
     // 显示模式
     document.querySelectorAll('.btn-group .calc-btn').forEach(btn => {
         btn.addEventListener('click', () => {
@@ -344,6 +372,17 @@ function initEvents() {
             applyDisplayMode();
         });
     });
+}
+
+function getCoordinateHint() {
+    switch (coordinateMode) {
+        case 'cylindrical':
+            return '可用变量：x, y, z, rho(√(x²+y²)), theta(方位角)';
+        case 'spherical':
+            return '可用变量：x, y, z, rho(距离), theta(方位角), phi(极角)';
+        default:
+            return '可用变量：x, y, z';
+    }
 }
 
 // ===== 窗口大小调整 =====

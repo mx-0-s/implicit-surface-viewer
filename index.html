@@ -63,7 +63,13 @@
                 </section>
 
                 <section class="panel-section" id="customSection">
-                    <h3>自定义函数 f(x,y,z)=0</h3>
+                    <h3>自定义隐函数</h3>
+                    <select id="coordinateMode" class="calc-select">
+                        <option value="cartesian">笛卡尔坐标</option>
+                        <option value="cylindrical">柱坐标</option>
+                        <option value="spherical">球坐标</option>
+                    </select>
+                    <div id="coordinateHint" class="input-hint">可用变量：x, y, z</div>
                     <input type="text" id="customFunction" class="calc-input" placeholder="例如: x*x+y*y+z*z-1">
                     <div class="calc-keypad">
                         <div class="keypad-row">
