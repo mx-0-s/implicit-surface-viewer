@@ -16,8 +16,8 @@ A browser-based 3D implicit surface visualizer powered by Three.js and the March
 - Parameter range for `a, b, c`: `-5` to `5`
 - 可选坐标范围：`±2`、`±5`、`±10`
 - Selectable coordinate ranges: `±2`, `±5`, and `±10`
-- 可调 Marching Cubes 分辨率
-- Adjustable Marching Cubes resolution
+- Marching Cubes 分辨率可在 `100` 到 `250` 之间调节，默认值为 `160`
+- Marching Cubes resolution ranges from `100` to `250`, with a default of `160`
 - 实体、线框和半透明显示模式
 - Solid, wireframe, and transparent display modes
 - 鼠标拖拽旋转、滚轮缩放
