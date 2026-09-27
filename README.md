@@ -22,8 +22,16 @@ A browser-based 3D implicit surface visualizer powered by Three.js and the March
 - Solid, wireframe, and transparent display modes
 - 鼠标拖拽旋转、滚轮缩放
 - Mouse drag rotation and wheel zoom
+- 可选启用第二个曲面，与主曲面共用坐标范围、分辨率和显示模式
+- Optionally display a second surface sharing the main surface's coordinate range, resolution, and display mode
+- 两个自定义曲面共用参数 `a, b, c`，并可使用同一计算器键盘输入表达式
+- Both custom surfaces share parameters `a, b, c` and can use the same calculator keypad for expression entry
 - 明暗主题切换
 - Light and dark themes
+
+启用第二个曲面会额外进行一次网格采样，较高分辨率下生成时间和内存占用会增加。
+
+Enabling the second surface adds another grid-sampling pass, increasing generation time and memory use at higher resolutions.
 
 ## 在线运行 Run Online
 

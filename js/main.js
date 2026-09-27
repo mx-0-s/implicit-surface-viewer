@@ -58,22 +58,34 @@ scene.add(gridHelper);
 
 // ===== 曲面网格 =====
 let surfaceMesh = null;
+let secondSurfaceMesh = null;
 let currentMode = 'solid';
 let currentFunction = 'sphere';
 let currentParams = {};
 let customFn = null;
+let sharedCustomParams = {};
+let secondFunction = 'torus';
+let secondParams = {};
+let secondCustomFn = null;
+let secondSurfaceEnabled = false;
 let coordinateMode = 'cartesian';
 let generationFrame = null;
+let pendingPrimaryGeneration = false;
+let pendingSecondGeneration = false;
 
-// 材质
-const material = new THREE.MeshPhongMaterial({
-    color: 0x4cc2ff,
-    specular: 0x222222,
-    shininess: 30,
-    side: THREE.DoubleSide,
-    transparent: false,
-    opacity: 1.0
-});
+function createSurfaceMaterial(color) {
+    return new THREE.MeshPhongMaterial({
+        color,
+        specular: 0x222222,
+        shininess: 30,
+        side: THREE.DoubleSide,
+        transparent: false,
+        opacity: 1.0
+    });
+}
+
+const material = createSurfaceMaterial(0x4cc2ff);
+const secondMaterial = createSurfaceMaterial(0xc8b97a);
 
 const CUSTOM_PARAMS = [
     { key: 'a', label: 'a', min: -5, max: 5, step: 0.1, value: 1 },
@@ -81,119 +93,131 @@ const CUSTOM_PARAMS = [
     { key: 'c', label: 'c', min: -5, max: 5, step: 0.1, value: 1 }
 ];
 
-// ===== Marching Cubes 生成曲面 =====
-function generateSurface() {
-    const resolution = parseInt(document.getElementById('resolution').value);
-    const range = parseFloat(document.getElementById('domainRange').value);
-    const size = range * 2; // 采样空间 [-range, range]
-
-    // 获取当前函数
-    let fn;
-    if (currentFunction === 'custom') {
-        if (!customFn) return;
-        fn = (x, y, z) => {
+function createEvaluator(functionName, params, customFunction) {
+    if (functionName === 'custom') {
+        if (!customFunction) return null;
+        return (x, y, z) => {
             const rho = Math.sqrt(x * x + y * y + z * z);
             const theta = Math.atan2(y, x);
             const phi = rho === 0 ? 0 : Math.acos(Math.max(-1, Math.min(1, z / rho)));
             const radialDistance = coordinateMode === 'spherical'
                 ? rho
                 : Math.sqrt(x * x + y * y);
-            return customFn(
+            return customFunction(
                 x,
                 y,
                 z,
-                currentParams.a,
-                currentParams.b,
-                currentParams.c,
+                params.a,
+                params.b,
+                params.c,
                 radialDistance,
                 theta,
                 coordinateMode === 'spherical' ? phi : 0
             );
         };
-    } else {
-        const preset = PRESET_FUNCTIONS[currentFunction];
-        fn = (x, y, z) => preset.fn(x, y, z, currentParams);
     }
 
-    // 创建 MarchingCubes，按分辨率预留足够的三角形缓冲区
-    // MarchingCubes 的 field 数组大小为 resolution^3
-    const maxPolyCount = Math.max(10000, resolution * resolution * 12);
-    const mc = new MarchingCubes(resolution, material, false, false, maxPolyCount);
-    mc.isolation = 0;
-    // MarchingCubes 顶点坐标已经是 [-1, 1]，映射到采样空间 [-size/2, size/2]
-    mc.scale.set(size / 2, size / 2, size / 2);
+    const preset = PRESET_FUNCTIONS[functionName];
+    return (x, y, z) => preset.fn(x, y, z, params);
+}
 
-    // 填充场值
-    const n = resolution;
+function createSurface(evaluate, surfaceMaterial, resolution, size) {
+    if (!evaluate) return null;
+
+    const maxPolyCount = Math.max(10000, resolution * resolution * 12);
+    const marchingCubes = new MarchingCubes(resolution, surfaceMaterial, false, false, maxPolyCount);
+    marchingCubes.isolation = 0;
+    marchingCubes.scale.set(size / 2, size / 2, size / 2);
+
     const half = size / 2;
-    for (let i = 0; i < n; i++) {
-        for (let j = 0; j < n; j++) {
-            for (let k = 0; k < n; k++) {
+    for (let i = 0; i < resolution; i++) {
+        for (let j = 0; j < resolution; j++) {
+            for (let k = 0; k < resolution; k++) {
                 const x = (i / (resolution - 1)) * size - half;
                 const y = (j / (resolution - 1)) * size - half;
                 const z = (k / (resolution - 1)) * size - half;
-                mc.field[i + j * n + k * n * n] = fn(x, y, z);
+                marchingCubes.field[i + j * resolution + k * resolution * resolution] = evaluate(x, y, z);
             }
         }
     }
 
-    mc.update();
+    marchingCubes.update();
+    return marchingCubes;
+}
 
-    // 移除旧曲面
-    if (surfaceMesh) {
-        scene.remove(surfaceMesh);
-        surfaceMesh.geometry.dispose();
+function replaceSurface(previousSurface, nextSurface) {
+    if (previousSurface) {
+        scene.remove(previousSurface);
+        previousSurface.geometry.dispose();
     }
-    surfaceMesh = mc;
-    scene.add(surfaceMesh);
+    if (nextSurface) scene.add(nextSurface);
+    return nextSurface;
+}
+
+// ===== Marching Cubes 生成曲面 =====
+function generateSurface(updatePrimary = true, updateSecond = true) {
+    const resolution = parseInt(document.getElementById('resolution').value);
+    const range = parseFloat(document.getElementById('domainRange').value);
+    const size = range * 2;
+
+    if (updatePrimary) {
+        const primarySurface = createSurface(
+            createEvaluator(
+                currentFunction,
+                currentFunction === 'custom' ? sharedCustomParams : currentParams,
+                customFn
+            ),
+            material,
+            resolution,
+            size
+        );
+        surfaceMesh = replaceSurface(surfaceMesh, primarySurface);
+    }
+
+    if (updateSecond) {
+        const secondarySurface = secondSurfaceEnabled
+            ? createSurface(
+                createEvaluator(
+                    secondFunction,
+                    secondFunction === 'custom' ? sharedCustomParams : secondParams,
+                    secondCustomFn
+                ),
+                secondMaterial,
+                resolution,
+                size
+            )
+            : null;
+        secondSurfaceMesh = replaceSurface(secondSurfaceMesh, secondarySurface);
+    }
 
     applyDisplayMode();
 }
 
-function scheduleSurfaceGeneration() {
+function scheduleSurfaceGeneration(target = 'all') {
+    if (target !== 'second') pendingPrimaryGeneration = true;
+    if (target !== 'primary') pendingSecondGeneration = true;
     if (generationFrame !== null) return;
     generationFrame = requestAnimationFrame(() => {
         generationFrame = null;
-        generateSurface();
+        const updatePrimary = pendingPrimaryGeneration;
+        const updateSecond = pendingSecondGeneration;
+        pendingPrimaryGeneration = false;
+        pendingSecondGeneration = false;
+        generateSurface(updatePrimary, updateSecond);
     });
 }
 
-// ===== 显示模式 =====
-function applyDisplayMode() {
-    if (!surfaceMesh) return;
-    const mat = surfaceMesh.material;
-    switch (currentMode) {
-        case 'solid':
-            mat.wireframe = false;
-            mat.transparent = false;
-            mat.opacity = 1.0;
-            break;
-        case 'wireframe':
-            mat.wireframe = true;
-            mat.transparent = false;
-            mat.opacity = 1.0;
-            break;
-        case 'transparent':
-            mat.wireframe = false;
-            mat.transparent = true;
-            mat.opacity = 0.5;
-            break;
-    }
-    mat.needsUpdate = true;
-}
-
-// ===== 参数滑块 =====
-function buildParamSliders() {
-    const container = document.getElementById('paramSliders');
+function buildParamSliders(containerId, functionName, onChange) {
+    const container = document.getElementById(containerId);
     container.innerHTML = '';
 
-    const params = currentFunction === 'custom'
+    const params = functionName === 'custom'
         ? CUSTOM_PARAMS
-        : PRESET_FUNCTIONS[currentFunction].params;
-    currentParams = {};
+        : PRESET_FUNCTIONS[functionName].params;
+    const values = {};
 
     params.forEach(param => {
-        currentParams[param.key] = param.value;
+        values[param.key] = param.value;
 
         const row = document.createElement('div');
         row.className = 'slider-row';
@@ -213,16 +237,91 @@ function buildParamSliders() {
         valueLabel.textContent = param.value.toFixed(2);
 
         slider.addEventListener('input', () => {
-            const val = parseFloat(slider.value);
-            currentParams[param.key] = val;
-            valueLabel.textContent = val.toFixed(2);
-            scheduleSurfaceGeneration();
+            const value = parseFloat(slider.value);
+            values[param.key] = value;
+            valueLabel.textContent = value.toFixed(2);
+            onChange();
         });
 
         row.appendChild(label);
         row.appendChild(slider);
         row.appendChild(valueLabel);
         container.appendChild(row);
+    });
+
+    return values;
+}
+
+function buildPrimaryParamSliders() {
+    const container = document.getElementById('paramSliders');
+    if (currentFunction === 'custom') {
+        container.innerHTML = '';
+        currentParams = sharedCustomParams;
+    } else {
+        currentParams = buildParamSliders(
+            'paramSliders',
+            currentFunction,
+            () => scheduleSurfaceGeneration('primary')
+        );
+    }
+    updateSharedCustomParamVisibility();
+}
+
+function buildSecondParamSliders() {
+    const container = document.getElementById('secondParamSliders');
+    if (secondFunction === 'custom') {
+        container.innerHTML = '';
+        secondParams = sharedCustomParams;
+    } else {
+        secondParams = buildParamSliders(
+            'secondParamSliders',
+            secondFunction,
+            () => scheduleSurfaceGeneration('second')
+        );
+    }
+    updateSharedCustomParamVisibility();
+}
+
+function updateSharedCustomParamVisibility() {
+    const secondUsesCustomFunction = secondSurfaceEnabled && secondFunction === 'custom';
+    document.getElementById('sharedCustomParamSection').hidden =
+        currentFunction !== 'custom' && !secondUsesCustomFunction;
+}
+
+function scheduleSharedCustomGeneration() {
+    const primaryUsesCustomFunction = currentFunction === 'custom';
+    const secondUsesCustomFunction = secondSurfaceEnabled && secondFunction === 'custom';
+    if (primaryUsesCustomFunction && secondUsesCustomFunction) {
+        scheduleSurfaceGeneration();
+    } else if (primaryUsesCustomFunction) {
+        scheduleSurfaceGeneration('primary');
+    } else if (secondUsesCustomFunction) {
+        scheduleSurfaceGeneration('second');
+    }
+}
+
+function applyDisplayMode() {
+    [surfaceMesh, secondSurfaceMesh].forEach(surface => {
+        if (!surface) return;
+        const mat = surface.material;
+        switch (currentMode) {
+            case 'solid':
+                mat.wireframe = false;
+                mat.transparent = false;
+                mat.opacity = 1.0;
+                break;
+            case 'wireframe':
+                mat.wireframe = true;
+                mat.transparent = false;
+                mat.opacity = 1.0;
+                break;
+            case 'transparent':
+                mat.wireframe = false;
+                mat.transparent = true;
+                mat.opacity = 0.5;
+                break;
+        }
+        mat.needsUpdate = true;
     });
 }
 
@@ -242,8 +341,18 @@ function initTheme() {
 
 // ===== 计算器键盘 =====
 function initKeypad() {
-    const input = document.getElementById('customFunction');
+    const inputs = [
+        document.getElementById('customFunction'),
+        document.getElementById('secondCustomFunction')
+    ];
+    let activeInput = inputs[0];
     const keypad = document.querySelector('.calc-keypad');
+
+    inputs.forEach(input => {
+        input.addEventListener('focus', () => {
+            activeInput = input;
+        });
+    });
 
     updateCoordinateKeys();
 
@@ -252,58 +361,58 @@ function initKeypad() {
         if (!btn) return;
 
         const key = btn.dataset.key;
-        const start = input.selectionStart;
-        const end = input.selectionEnd;
-        const value = input.value;
+        const start = activeInput.selectionStart;
+        const end = activeInput.selectionEnd;
+        const value = activeInput.value;
 
         switch (key) {
             case 'clear':
-                input.value = '';
+                activeInput.value = '';
                 break;
             case 'backspace':
                 if (start === end && start > 0) {
-                    input.value = value.slice(0, start - 1) + value.slice(end);
-                    input.selectionStart = input.selectionEnd = start - 1;
+                    activeInput.value = value.slice(0, start - 1) + value.slice(end);
+                    activeInput.selectionStart = activeInput.selectionEnd = start - 1;
                 } else {
-                    input.value = value.slice(0, start) + value.slice(end);
-                    input.selectionStart = input.selectionEnd = start;
+                    activeInput.value = value.slice(0, start) + value.slice(end);
+                    activeInput.selectionStart = activeInput.selectionEnd = start;
                 }
                 break;
             case 'pi':
-                insertText(input, 'π', start, end);
+                insertText(activeInput, 'π', start, end);
                 break;
             case 'e':
-                insertText(input, 'e', start, end);
+                insertText(activeInput, 'e', start, end);
                 break;
             case 'sqrt':
-                insertText(input, 'sqrt(', start, end);
+                insertText(activeInput, 'sqrt(', start, end);
                 break;
             case 'abs':
-                insertText(input, 'abs(', start, end);
+                insertText(activeInput, 'abs(', start, end);
                 break;
             case 'sin':
             case 'cos':
             case 'tan':
             case 'log':
             case 'exp':
-                insertText(input, key + '(', start, end);
+                insertText(activeInput, key + '(', start, end);
                 break;
             default:
-                insertText(input, key, start, end);
+                insertText(activeInput, key, start, end);
         }
 
-        input.focus();
+        activeInput.focus();
     });
 
     // 应用自定义函数
     document.getElementById('applyCustom').addEventListener('click', () => {
-        const expr = input.value.trim();
+        const expr = inputs[0].value.trim();
         if (!expr) return;
         try {
             customFn = parseCustomFunction(expr);
             currentFunction = 'custom';
             document.getElementById('functionSelect').value = 'custom';
-            buildParamSliders();
+            buildPrimaryParamSliders();
             scheduleSurfaceGeneration();
         } catch (err) {
             alert(err.message);
@@ -321,8 +430,8 @@ function insertText(input, text, start, end) {
 function initEvents() {
     // 函数选择
     document.getElementById('functionSelect').addEventListener('change', (e) => {
-        currentFunction = e.target.value;
-        if (currentFunction === 'custom') {
+        const selectedFunction = e.target.value;
+        if (selectedFunction === 'custom') {
             // 使用自定义函数
             const expr = document.getElementById('customFunction').value.trim();
             if (expr) {
@@ -330,17 +439,65 @@ function initEvents() {
                     customFn = parseCustomFunction(expr);
                 } catch (err) {
                     alert(err.message);
+                    e.target.value = currentFunction;
                     return;
                 }
             } else {
                 alert('请先输入自定义函数表达式');
-                e.target.value = 'sphere';
-                currentFunction = 'sphere';
+                e.target.value = currentFunction;
                 return;
             }
+        } else {
+            customFn = null;
         }
-        buildParamSliders();
+        currentFunction = selectedFunction;
+        buildPrimaryParamSliders();
         scheduleSurfaceGeneration();
+    });
+
+    const enableSecondSurface = document.getElementById('enableSecondSurface');
+    const secondSurfaceControls = document.getElementById('secondSurfaceControls');
+    enableSecondSurface.addEventListener('change', () => {
+        secondSurfaceEnabled = enableSecondSurface.checked;
+        secondSurfaceControls.hidden = !secondSurfaceEnabled;
+        secondCustomControls.hidden = !secondSurfaceEnabled || secondFunction !== 'custom';
+        updateSharedCustomParamVisibility();
+        scheduleSurfaceGeneration('second');
+    });
+
+    const secondFunctionSelect = document.getElementById('secondFunctionSelect');
+    const secondCustomControls = document.getElementById('secondCustomControls');
+    secondFunctionSelect.addEventListener('change', () => {
+        secondFunction = secondFunctionSelect.value;
+        secondCustomControls.hidden = !secondSurfaceEnabled || secondFunction !== 'custom';
+        secondCustomFn = null;
+        if (secondFunction === 'custom') {
+            const expr = document.getElementById('secondCustomFunction').value.trim();
+            if (expr) {
+                try {
+                    secondCustomFn = parseCustomFunction(expr);
+                } catch (err) {
+                    alert(err.message);
+                }
+            }
+        }
+        buildSecondParamSliders();
+        if (secondSurfaceEnabled) scheduleSurfaceGeneration('second');
+    });
+
+    document.getElementById('applySecondCustom').addEventListener('click', () => {
+        const expr = document.getElementById('secondCustomFunction').value.trim();
+        if (!expr) return;
+        try {
+            secondCustomFn = parseCustomFunction(expr);
+            secondFunction = 'custom';
+            secondFunctionSelect.value = 'custom';
+            secondCustomControls.hidden = !secondSurfaceEnabled;
+            buildSecondParamSliders();
+            if (secondSurfaceEnabled) scheduleSurfaceGeneration('second');
+        } catch (err) {
+            alert(err.message);
+        }
     });
 
     // 分辨率
@@ -359,11 +516,14 @@ function initEvents() {
     // 自定义函数坐标模式
     const coordinateModeSelect = document.getElementById('coordinateMode');
     const coordinateHint = document.getElementById('coordinateHint');
+    const secondCoordinateHint = document.getElementById('secondCoordinateHint');
     coordinateModeSelect.addEventListener('change', () => {
         coordinateMode = coordinateModeSelect.value;
         updateCoordinateKeys();
-        coordinateHint.textContent = getCoordinateHint();
-        if (currentFunction === 'custom') scheduleSurfaceGeneration();
+        const hint = getCoordinateHint();
+        coordinateHint.textContent = hint;
+        secondCoordinateHint.textContent = hint;
+        scheduleSurfaceGeneration();
     });
 
     // 显示模式
@@ -426,7 +586,13 @@ function init() {
     initTheme();
     initKeypad();
     initEvents();
-    buildParamSliders();
+    sharedCustomParams = buildParamSliders(
+        'sharedCustomParamSliders',
+        'custom',
+        scheduleSharedCustomGeneration
+    );
+    buildPrimaryParamSliders();
+    buildSecondParamSliders();
     generateSurface();
     animate();
 }

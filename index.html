@@ -34,6 +34,29 @@
                 <section class="panel-section" id="paramSection">
                     <h3>参数调节</h3>
                     <div id="paramSliders"></div>
+                    <div id="sharedCustomParamSection" hidden>
+                        <h4>自定义函数共享参数 a, b, c</h4>
+                        <div id="sharedCustomParamSliders"></div>
+                    </div>
+                </section>
+
+                <section class="panel-section" id="secondSurfaceSection">
+                    <h3>第二个曲面</h3>
+                    <label class="check-row">
+                        <input type="checkbox" id="enableSecondSurface">
+                        <span>显示第二个曲面</span>
+                    </label>
+                    <div id="secondSurfaceControls" hidden>
+                        <select id="secondFunctionSelect" class="calc-select">
+                            <option value="sphere">球面</option>
+                            <option value="torus" selected>环面</option>
+                            <option value="heart">心脏曲面</option>
+                            <option value="hyperboloid">双叶双曲面</option>
+                            <option value="klein">克莱因瓶</option>
+                            <option value="custom">自定义函数</option>
+                        </select>
+                        <div id="secondParamSliders"></div>
+                    </div>
                 </section>
 
                 <section class="panel-section">
@@ -70,6 +93,12 @@
                         <option value="spherical">球坐标</option>
                     </select>
                     <div id="coordinateHint" class="input-hint">可用变量：x, y, z</div>
+                    <div id="secondCustomControls" hidden>
+                        <label class="expression-label" for="secondCustomFunction">第二个曲面表达式</label>
+                        <div class="input-hint">坐标模式与曲面 1 共用：<span id="secondCoordinateHint">可用变量：x, y, z</span></div>
+                        <input type="text" id="secondCustomFunction" class="calc-input" placeholder="例如: ρ - 0.6">
+                        <button id="applySecondCustom" class="calc-btn primary">应用第二个曲面</button>
+                    </div>
                     <input type="text" id="customFunction" class="calc-input" placeholder="例如: x*x+y*y+z*z-1">
                     <div class="calc-keypad">
                         <div class="keypad-row">

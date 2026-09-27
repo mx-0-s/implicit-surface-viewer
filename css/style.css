@@ -126,6 +126,15 @@ html, body {
     letter-spacing: 0.5px;
 }
 
+#sharedCustomParamSection h4,
+.expression-label {
+    display: block;
+    margin: 8px 0;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+}
+
 /* ===== 计算器风格控件 ===== */
 .calc-select {
     width: 100%;
@@ -149,6 +158,37 @@ html, body {
     color: var(--text-secondary);
     font-size: 11px;
     line-height: 1.5;
+}
+
+.check-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.check-row input {
+    accent-color: var(--accent);
+}
+
+#secondSurfaceControls {
+    margin-top: 10px;
+}
+
+#secondParamSliders .slider-row {
+    margin-top: 10px;
+}
+
+#secondParamSliders .slider-row label {
+    min-width: 24px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+#secondCustomControls {
+    margin: 8px 0;
 }
 
 .calc-input {
