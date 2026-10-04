@@ -455,10 +455,15 @@ function initEvents() {
         scheduleSurfaceGeneration();
     });
 
-    const enableSecondSurface = document.getElementById('enableSecondSurface');
+    const dualSurfaceToggle = document.getElementById('dualSurfaceToggle');
+    const secondSurfaceSection = document.getElementById('secondSurfaceSection');
     const secondSurfaceControls = document.getElementById('secondSurfaceControls');
-    enableSecondSurface.addEventListener('change', () => {
-        secondSurfaceEnabled = enableSecondSurface.checked;
+    dualSurfaceToggle.addEventListener('click', () => {
+        secondSurfaceEnabled = !secondSurfaceEnabled;
+        dualSurfaceToggle.classList.toggle('active', secondSurfaceEnabled);
+        dualSurfaceToggle.setAttribute('aria-pressed', String(secondSurfaceEnabled));
+        dualSurfaceToggle.title = secondSurfaceEnabled ? '关闭双曲面模式' : '开启双曲面模式';
+        secondSurfaceSection.hidden = !secondSurfaceEnabled;
         secondSurfaceControls.hidden = !secondSurfaceEnabled;
         secondCustomControls.hidden = !secondSurfaceEnabled || secondFunction !== 'custom';
         updateSharedCustomParamVisibility();

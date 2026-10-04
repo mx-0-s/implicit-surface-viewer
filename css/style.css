@@ -75,6 +75,35 @@ html, body {
     user-select: none;
 }
 
+.titlebar-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mode-btn {
+    min-height: 36px;
+    padding: 0 12px;
+    border: 1px solid var(--btn-border);
+    border-radius: 6px;
+    background: var(--btn-bg);
+    color: var(--text);
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.mode-btn:hover {
+    background: var(--btn-hover);
+}
+
+.mode-btn.active {
+    background: var(--btn-active);
+    border-color: var(--accent);
+    color: var(--accent);
+    font-weight: 600;
+}
+
 .title {
     font-size: 16px;
     font-weight: 600;

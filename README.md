@@ -59,6 +59,10 @@ start.bat
 
 The script tries Python first and falls back to Node.js when Python is unavailable.
 
+关闭启动终端或按 `Ctrl+C` 会停止该脚本启动的服务器并释放 `8000` 端口。浏览器标签页会保留，但本地页面将无法继续加载；如果端口原本已被其他程序占用，脚本不会关闭该程序。
+
+Closing the launcher terminal or pressing `Ctrl+C` stops the server started by the script and releases port `8000`. The browser tab remains open but can no longer load the local page. If another program already owns the port, the script will not stop it.
+
 ### 手动启动 Using a manual server
 
 ```bash

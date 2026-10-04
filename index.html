@@ -12,6 +12,7 @@
         <header class="titlebar">
             <div class="title">三维隐函数曲面绘制器</div>
             <div class="titlebar-actions">
+                <button id="dualSurfaceToggle" class="mode-btn" type="button" aria-pressed="false" title="开启双曲面模式">支持第二个曲面</button>
                 <button id="themeToggle" class="theme-btn" title="切换主题">🌙</button>
             </div>
         </header>
@@ -40,13 +41,9 @@
                     </div>
                 </section>
 
-                <section class="panel-section" id="secondSurfaceSection">
+                <section class="panel-section" id="secondSurfaceSection" hidden>
                     <h3>第二个曲面</h3>
-                    <label class="check-row">
-                        <input type="checkbox" id="enableSecondSurface">
-                        <span>显示第二个曲面</span>
-                    </label>
-                    <div id="secondSurfaceControls" hidden>
+                    <div id="secondSurfaceControls">
                         <select id="secondFunctionSelect" class="calc-select">
                             <option value="sphere">球面</option>
                             <option value="torus" selected>环面</option>
