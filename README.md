@@ -55,9 +55,9 @@ Windows users can double-click:
 start.bat
 ```
 
-脚本会优先使用 Python 启动服务器；如果没有 Python，则尝试使用 Node.js。
+脚本会依次尝试 Python、Node.js；如果两者都不可用，则使用 Windows PowerShell 内置的 HTTP 服务。
 
-The script tries Python first and falls back to Node.js when Python is unavailable.
+The script tries Python, then Node.js, and falls back to a built-in Windows PowerShell HTTP server if neither is available.
 
 关闭启动终端或按 `Ctrl+C` 会停止该脚本启动的服务器并释放 `8000` 端口。浏览器标签页会保留，但本地页面将无法继续加载；如果端口原本已被其他程序占用，脚本不会关闭该程序。
 
