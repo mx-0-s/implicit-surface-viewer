@@ -456,9 +456,13 @@ function initEvents() {
     });
 
     const enableSecondSurface = document.getElementById('enableSecondSurface');
+    const secondSurfaceSection = document.getElementById('secondSurfaceSection');
     const secondSurfaceControls = document.getElementById('secondSurfaceControls');
-    enableSecondSurface.addEventListener('change', () => {
-        secondSurfaceEnabled = enableSecondSurface.checked;
+    enableSecondSurface.addEventListener('click', () => {
+        secondSurfaceEnabled = !secondSurfaceEnabled;
+        enableSecondSurface.setAttribute('aria-pressed', String(secondSurfaceEnabled));
+        enableSecondSurface.classList.toggle('is-active', secondSurfaceEnabled);
+        secondSurfaceSection.hidden = !secondSurfaceEnabled;
         secondSurfaceControls.hidden = !secondSurfaceEnabled;
         secondCustomControls.hidden = !secondSurfaceEnabled || secondFunction !== 'custom';
         updateSharedCustomParamVisibility();
